@@ -4,9 +4,10 @@ import { AppController } from "./app.controller";
 import { OrdersModule } from "./orders/orders.module";
 import { ProductsModule } from "./products/products.model";
 import { AuthModule } from "./auth/auth.module";
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
-  imports: [UsersModule, OrdersModule, ProductsModule, AuthModule],
+  imports: [UsersModule, OrdersModule, ProductsModule, AuthModule, AdminModule],
   controllers: [AppController],
 })
 export class AppModule {}
