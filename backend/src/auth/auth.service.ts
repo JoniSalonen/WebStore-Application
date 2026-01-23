@@ -14,11 +14,15 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new UnauthorizedException();
 
-    const passwordValid = await bcrypt.compare(password, user.password);
-    if (!passwordValid) throw new UnauthorizedException();
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) throw new UnauthorizedException();
 
     return {
-      accessToken: this.jwt.sign({ userId: user.id }),
+      accessToken: this.jwt.sign({
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+      }),
     };
   }
 }

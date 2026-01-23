@@ -43,4 +43,22 @@ export class UsersService {
       where: { id },
     });
   }
+
+  async findAdmins(): Promise<User[]> {
+    return this.prisma.user.findMany({
+      where: { role: "ADMIN" },
+    });
+  }
+
+  async createAdminUser(data: CreateUserDto): Promise<User> {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    return this.prisma.user.create({
+      data: {
+        email: data.email,
+        name: data.name,
+        password: hashedPassword,
+        role: "ADMIN",
+      },
+    });
+  }
 }

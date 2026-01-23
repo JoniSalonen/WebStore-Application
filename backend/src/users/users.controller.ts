@@ -34,4 +34,14 @@ export class UsersController {
   remove(@Param("id", ParseIntPipe) id: number): Promise<User> {
     return this.usersService.removeUser(id);
   }
+
+  @Post("admin")
+  createAdmin(@Body() dto: CreateUserDto): Promise<User> {
+    return this.usersService.createAdminUser(dto);
+  }
+
+  @Get("admin")
+  async getAdminUsers(): Promise<User[]> {
+    return await this.usersService.findAdmins();
+  }
 }

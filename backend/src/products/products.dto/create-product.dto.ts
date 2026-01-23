@@ -1,32 +1,31 @@
-import { IsNumber, IsString, IsInt } from "class-validator";
+import { IsString, IsInt, IsNumber, Min, IsNotEmpty } from "class-validator";
 
 export class CreateProductDto {
   @IsString()
+  @IsNotEmpty()
   name!: string;
 
   @IsNumber()
+  @Min(0)
   price!: number;
 
   @IsInt()
+  @Min(0)
   stock!: number;
 
   @IsString()
+  @IsNotEmpty()
   brandName!: string;
 
   @IsString()
+  @IsNotEmpty()
   category!: string;
 
   @IsString()
+  @IsNotEmpty()
   subCategory!: string;
 
-  // Adding imageUrl field back if needed in the future
-  // @IsString()
-  // imageUrl!: string;
-
-  // Adding videoUrl field back if needed in the future
-  // @IsString()
-  // videoUrl!: string;
-
   @IsString()
+  @IsNotEmpty()
   description!: string;
 }

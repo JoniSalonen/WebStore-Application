@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
     "start": "node dist/main.js",
     "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "build": "tsc"
@@ -14,10 +15,16 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@nestjs/testing": "^11.1.12",
     "@types/bcrypt": "^6.0.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.0.9",
     "@types/passport-jwt": "^4.0.1",
+    "@types/supertest": "^6.0.3",
     "dotenv": "^17.2.3",
+    "jest": "^30.2.0",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"

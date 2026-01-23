@@ -12,6 +12,7 @@ model User {
   name      String?
   email     String   @unique
   password  String
+  role     Role   @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -45,6 +46,11 @@ enum OrderStatus {
   PAID
   SHIPPED
   CANCELLED
+}
+
+enum Role {
+  ADMIN
+  USER
 }
 
 model Product{
