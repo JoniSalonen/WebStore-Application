@@ -5,64 +5,72 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateOrderDto } from "./orders.dto/create-order.dto";
-import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
-    // Get all products involved in the order
-    const products = await this.prisma.product.findMany({
-      where: {
-        id: { in: dto.items.map((i) => i.productId) },
-      },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      // Fetch all products in the order at once
+      const products = await tx.product.findMany({
+        where: {
+          id: { in: dto.items.map((i) => i.productId) },
+        },
+      });
 
-    // calculate Total price
-    let total = 0;
+      let total = 0;
 
-    const orderItemsData = dto.items.map((item) => {
-      const product = products.find((p) => p.id === item.productId);
-      if (!product) {
-        throw new Error(`Product not found: ${item.productId}`);
+      const orderItemsData = [];
+
+      for (const item of dto.items) {
+        const product = products.find((p) => p.id === item.productId);
+
+        if (!product) {
+          throw new NotFoundException(`Product not found: ${item.productId}`);
+        }
+
+        if (product.stock < item.quantity) {
+          throw new BadRequestException(
+            `Not enough stock for ${product.name}. Available: ${product.stock}`,
+          );
+        }
+
+        // calculate total price
+        total += product.price.toNumber() * item.quantity;
+
+        // update stock
+        await tx.product.update({
+          where: { id: product.id },
+          data: {
+            stock: {
+              decrement: item.quantity,
+            },
+          },
+        });
+
+        orderItemsData.push({
+          quantity: item.quantity,
+          price: product.price.toNumber(), // price at the time of order
+          product: {
+            connect: { id: product.id },
+          },
+        });
       }
 
-      total += product.price.toNumber() * item.quantity;
-
-      return {
-        productId: product.id,
-        quantity: item.quantity,
-        price: product.price,
-      };
-    });
-
-    return this.prisma.order.create({
-      data: {
-        userId: Number(userId),
-        total,
-        items: {
-          create: await Promise.all(
-            dto.items.map(async (item) => {
-              const product = await this.prisma.product.findUnique({
-                where: { id: item.productId },
-              });
-
-              if (!product) throw new NotFoundException("Product not found");
-
-              return {
-                quantity: item.quantity,
-                price: product.price.toNumber(),
-
-                product: {
-                  connect: { id: String(item.productId) },
-                },
-              };
-            }),
-          ),
+      // Create order + items
+      return tx.order.create({
+        data: {
+          userId: Number(userId),
+          total,
+          items: {
+            create: orderItemsData,
+          },
         },
-      },
-      include: { items: true },
+        include: {
+          items: true,
+        },
+      });
     });
   }
 
@@ -76,13 +84,33 @@ export class OrdersService {
   async findByUser(userId: number) {
     return this.prisma.order.findMany({
       where: { userId },
-      include: { items: true },
+      include: {
+        items: true,
+      },
     });
   }
 
   async getAllOrders() {
     return this.prisma.order.findMany({
       include: { items: true },
+    });
+  }
+
+  async getUserOrders(userId: number) {
+    return this.prisma.order.findMany({
+      where: {
+        userId: Number(userId),
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
   }
 }

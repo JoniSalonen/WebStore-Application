@@ -22,6 +22,13 @@ export class OrdersController {
     return this.ordersService.createOrder(req.user.userId, dto);
   }
 
+  @Get("my")
+  @UseGuards(JwtAuthGuard)
+  getUserOrders(@Req() req: any) {
+    console.log("REQ.USER:", req.user);
+    return this.ordersService.findByUser(req.user.userId);
+  }
+
   @Get(":userId")
   @UseGuards(JwtAuthGuard)
   findByUser(@Param("userId") userId: string) {
