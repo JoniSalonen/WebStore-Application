@@ -41,4 +41,17 @@ export class AdminController {
   getSalesChartData(@Query("range") range: string) {
     return this.adminService.getSalesChartData(range);
   }
+
+  @Get("sales/top-products")
+  getTopSellingProducts(
+    @Query("range") range: string,
+    @Query("limit") limit: string,
+  ) {
+    return this.adminService.getTopSellingProducts(range, Number(limit || 5));
+  }
+
+  @Get("products/low-stock")
+  getLowStockProducts(@Query("threshold") threshold: string) {
+    return this.adminService.getLowStockProducts(Number(threshold || 10));
+  }
 }

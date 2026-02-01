@@ -245,4 +245,100 @@ export class AdminService {
     }
     return result;
   }
+
+  // Get top selling products
+  async getTopSellingProducts(range: string, limit: number) {
+    const now = new Date();
+    let startDate = new Date();
+
+    switch (range) {
+      case "today":
+        startDate.setHours(0, 0, 0, 0);
+        break;
+
+      case "week":
+        startDate.setDate(now.getDate() - 7);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+
+      case "month":
+        startDate.setMonth(now.getMonth() - 1);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+
+      case "year":
+        startDate.setFullYear(now.getFullYear() - 1);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+
+      default:
+        startDate.setHours(0, 0, 0, 0); // Earliest date
+    }
+
+    const items = await this.prisma.orderItem.findMany({
+      where: {
+        order: {
+          status:
+            OrderStatus.PAID || OrderStatus.COMPLETED || OrderStatus.SHIPPED,
+          createdAt: {
+            gte: startDate,
+          },
+        },
+      },
+      include: { product: true },
+    });
+
+    const productMap: Record<
+      string,
+      {
+        productId: string;
+        name: string;
+        totalQuantity: number;
+        totalRevenue: number;
+      }
+    > = {};
+
+    for (const item of items) {
+      if (!productMap[item.productId]) {
+        productMap[item.productId] = {
+          productId: item.productId,
+          name: item.product.name,
+          totalQuantity: 0,
+          totalRevenue: 0,
+        };
+      }
+      productMap[item.productId].totalQuantity += item.quantity;
+      productMap[item.productId].totalRevenue +=
+        item.quantity * item.product.price.toNumber();
+    }
+
+    return Object.values(productMap)
+      .map((p) => ({
+        productId: p.productId,
+        name: p.name,
+        totalQuantity: p.totalQuantity,
+        totalRevenue: p.totalRevenue,
+      }))
+      .sort((a, b) => b.totalQuantity - a.totalQuantity)
+      .slice(0, limit);
+  }
+
+  async getLowStockProducts(threshold = 10) {
+    return this.prisma.product.findMany({
+      where: {
+        stock: {
+          lte: threshold,
+        },
+      },
+      orderBy: { stock: "asc" },
+      select: {
+        id: true,
+        name: true,
+        stock: true,
+        price: true,
+        brandName: true,
+        category: true,
+      },
+    });
+  }
 }
