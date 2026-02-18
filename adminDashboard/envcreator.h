@@ -11,6 +11,7 @@ public:
 public slots:
     QString openEnv();
     void createEnvFile();
+    QString getToken();
 
 };
 

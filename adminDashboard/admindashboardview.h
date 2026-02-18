@@ -32,7 +32,6 @@ private:
     QNetworkAccessManager *manager;
     QComboBox *rangeBox;
     QChartView *chartView;
-    QString getToken();
 
 };
 

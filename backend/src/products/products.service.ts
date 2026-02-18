@@ -11,7 +11,10 @@ export class ProductsService {
   }
 
   findById(id: string) {
-    return this.prisma.product.findUnique({ where: { id } });
+    return this.prisma.product.findUnique({
+      where: { id },
+      include: { media: true },
+    });
   }
 
   create(data: CreateProductDto) {

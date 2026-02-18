@@ -8,6 +8,7 @@ envCreator::envCreator() {
 
 }
 
+// Reads the env file and get the url saved
 QString envCreator::openEnv(){
     QFile file("url.txt");
     if(!file.open(QIODevice::ReadOnly))
@@ -16,6 +17,7 @@ QString envCreator::openEnv(){
     return file.readAll();
 }
 
+// Creates env file where the url is saved
 void envCreator::createEnvFile(){
     QFile file("url.txt");
     QString url("http://localhost:3000/");
@@ -23,4 +25,13 @@ void envCreator::createEnvFile(){
         file.write(url.toUtf8());
         file.close();
     }
+}
+
+// gets the JWT token from file that it was writen in the login screen
+QString envCreator::getToken(){
+    QFile file("token.txt");
+    if(!file.open(QIODevice::ReadOnly))
+        return "";
+
+    return file.readAll();
 }

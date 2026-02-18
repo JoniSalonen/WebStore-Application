@@ -2,8 +2,8 @@
 #include "./ui_adminlogin.h"
 #include "admindashboardview.h"
 #include "envcreator.h"
-#include <QtNetwork/QNetworkRequest>
-#include <QtNetwork/QNetworkReply>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QFile>
@@ -37,7 +37,7 @@ AdminLogin::AdminLogin(QWidget *parent)
     ui->passwordEdit->setEchoMode(QLineEdit::Password);
 
     // for testin purposes will be removed later!
-    // this makes the testing easier, the edit lines are filled already
+    // this makes the testing easier, the edit lines are filled already when launching the program
     ui->emailEdit->setText("a@a.com");
     ui->passwordEdit->setText("123456");
 
@@ -74,7 +74,6 @@ void AdminLogin::login(){
                 file.close();
             }
             // Getting positive result
-            qDebug() << "Login succesfull!";
             AdminDashboardview *dashboard = new AdminDashboardview();
             dashboard->show();
 
@@ -82,7 +81,6 @@ void AdminLogin::login(){
             this->close();
         }else{
             // Getting negative result
-            qDebug() << "Login failed";
             QMessageBox::warning(this, "Login Failed", "Wrong Email or password");
         }
 

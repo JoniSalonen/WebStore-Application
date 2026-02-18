@@ -12,6 +12,11 @@ import { CreateProductDto } from "./products.dto/create-product.dto";
 import { RolesGuard } from "../auth/roles.guard";
 import { Roles } from "../auth/roles.decorator";
 import { JwtAuthGuard } from "../auth/auth.guard";
+import { UseInterceptors, UploadedFile } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import * as fs from "fs";
+import * as path from "path";
 
 @Controller("products")
 export class ProductsController {
@@ -25,6 +30,11 @@ export class ProductsController {
   @Get(":id")
   getOne(@Param("id") id: string) {
     return this.productsService.findById(id);
+  }
+
+  @Get(":id/media")
+  getMedia(@Param("id") id: string) {
+    return this.productsService.findById(id).media;
   }
 
   @Post()

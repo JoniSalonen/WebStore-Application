@@ -38,7 +38,6 @@ model OrderItem {
   id      String @id @default(uuid())
   orderId String
   order   Order  @relation(fields: [orderId], references: [id])
-
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
@@ -69,5 +68,19 @@ model Product {
   subCategory String
   description String
 
+  media Media[]
   orderItems OrderItem[]
+}
+
+model Media{
+  id          String    @id @default(uuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  filename    String
+  filepath    String
+  mimetype    String
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
 }

@@ -18,6 +18,7 @@
 #include <QValueAxis>
 
 static QString URL;
+static envCreator env;
 
 AdminDashboardview::AdminDashboardview(QWidget *parent)
     : QMainWindow(parent)
@@ -25,7 +26,7 @@ AdminDashboardview::AdminDashboardview(QWidget *parent)
 {
     ui->setupUi(this);
     setWindowTitle("Admin Dashboard");
-    envCreator env;
+
     URL = env.openEnv();
 
     manager = new QNetworkAccessManager(this);
@@ -52,11 +53,10 @@ void AdminDashboardview::loadDashboard(){
     QUrl url(URL + "admin/dashboard");
     QNetworkRequest request(url);
 
-    QString token = getToken();
-    qDebug() << token;
+    QString token = env.getToken();
     request.setRawHeader("Authorization", "Bearer " + token.toUtf8());
 
-    QNetworkReply *reply =manager->get(request);
+    QNetworkReply *reply = manager->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply](){
 
@@ -124,7 +124,7 @@ void AdminDashboardview::loadChartData(){
 
     QUrl url(URL + "admin/sales/chart?range=" + range);
     QNetworkRequest request(url);
-    QString token = getToken();
+    QString token = env.getToken();
 
     request.setRawHeader("Authorization", "Bearer " + token.toUtf8());
 
@@ -139,8 +139,6 @@ void AdminDashboardview::loadChartData(){
         QChart *chart = new QChart();
         QDateTimeAxis *axisX = new QDateTimeAxis;
         QValueAxis *axisY = new QValueAxis;
-
-        int index = 0;
 
         // gets the data to the chart from backend/database
         for (const auto &val : arr) {
@@ -177,15 +175,6 @@ void AdminDashboardview::loadChartData(){
         chartView->setChart(chart);
         reply->deleteLater();
     });
-}
-
-// gets the JWT token from file that it was writen in the login screen
-QString AdminDashboardview::getToken(){
-    QFile file("token.txt");
-    if(!file.open(QIODevice::ReadOnly))
-        return "";
-
-    return file.readAll();
 }
 
 // Opening new window to add new product to database
