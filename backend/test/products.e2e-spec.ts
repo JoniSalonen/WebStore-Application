@@ -23,6 +23,10 @@ describe("Products & auth (e2e)", () => {
 
     prisma = app.get<PrismaService>(PrismaService);
 
+    // Delete in FK-dependency order: children before parents
+    await prisma.orderItem.deleteMany();
+    await prisma.order.deleteMany();
+    await prisma.media.deleteMany();
     await prisma.product.deleteMany();
     await prisma.user.deleteMany();
 

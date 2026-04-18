@@ -10,7 +10,7 @@ import { CreateOrderDto } from "./orders.dto/create-order.dto";
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
 
-  async createOrder(userId: string, dto: CreateOrderDto) {
+  async createOrder(userId: number, dto: CreateOrderDto) {
     return this.prisma.$transaction(async (tx) => {
       // Fetch all products in the order at once
       const products = await tx.product.findMany({
@@ -61,7 +61,7 @@ export class OrdersService {
       // Create order + items
       return tx.order.create({
         data: {
-          userId: Number(userId),
+          userId,
           total,
           items: {
             create: orderItemsData,
@@ -75,9 +75,9 @@ export class OrdersService {
   }
 
   // testing purpose only delete later
-  async removeOrder(orderId: number) {
+  async removeOrder(orderId: string) {
     await this.prisma.order.delete({
-      where: { id: String(orderId) },
+      where: { id: orderId },
     });
   }
 
@@ -99,7 +99,7 @@ export class OrdersService {
   async getUserOrders(userId: number) {
     return this.prisma.order.findMany({
       where: {
-        userId: Number(userId),
+        userId,
       },
       include: {
         items: {

@@ -7,6 +7,7 @@ import {
   Delete,
   UseGuards,
   Req,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto } from "./orders.dto/create-order.dto";
@@ -31,8 +32,8 @@ export class OrdersController {
 
   @Get(":userId")
   @UseGuards(JwtAuthGuard)
-  findByUser(@Param("userId") userId: string) {
-    return this.ordersService.findByUser(Number(userId));
+  findByUser(@Param("userId", ParseIntPipe) userId: number) {
+    return this.ordersService.findByUser(userId);
   }
 
   // for testing purpose only delete later
@@ -46,6 +47,6 @@ export class OrdersController {
   @Delete(":orderId")
   @UseGuards(JwtAuthGuard)
   remove(@Param("orderId") orderId: string) {
-    return this.ordersService.removeOrder(Number(orderId));
+    return this.ordersService.removeOrder(orderId);
   }
 }

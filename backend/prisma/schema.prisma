@@ -72,6 +72,11 @@ model Product {
   orderItems OrderItem[]
 }
 
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
 model Media{
   id          String    @id @default(uuid())
   productId   String
@@ -79,6 +84,7 @@ model Media{
   filename    String
   filepath    String
   mimetype    String
+  mediaType   MediaType
 
   createdAt DateTime @default(now())
 

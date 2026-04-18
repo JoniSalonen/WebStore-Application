@@ -13,7 +13,7 @@
 #include <QLabel>
 #include <QMessageBox>
 
-static QString URL;
+static QString URL; // Base URL read from url.txt at startup
 
 AdminLogin::AdminLogin(QWidget *parent)
     : QMainWindow(parent)
@@ -23,24 +23,22 @@ AdminLogin::AdminLogin(QWidget *parent)
     setWindowTitle("Login window");
 
     envCreator env;
-    // creates enviroment url variable
+    // Ensure url.txt exists with the default localhost address, then read it
     env.createEnvFile();
     URL = env.openEnv();
 
     manager = new QNetworkAccessManager(this);
 
-    connect(ui->loginBtn, &QPushButton::clicked,this, &AdminLogin::login);
+    connect(ui->loginBtn, &QPushButton::clicked, this, &AdminLogin::login);
 
     ui->emailEdit->setPlaceholderText("Email");
 
     ui->passwordEdit->setPlaceholderText("Password");
-    ui->passwordEdit->setEchoMode(QLineEdit::Password);
+    ui->passwordEdit->setEchoMode(QLineEdit::Password); // Masks characters as the user types
 
-    // for testin purposes will be removed later!
-    // this makes the testing easier, the edit lines are filled already when launching the program
+    // Pre-filled for development convenience — remove before production
     ui->emailEdit->setText("a@a.com");
     ui->passwordEdit->setText("123456");
-
 }
 
 AdminLogin::~AdminLogin()
@@ -48,39 +46,38 @@ AdminLogin::~AdminLogin()
     delete ui;
 }
 
-// Login screen connecting to the database and getting result if the user can proceed
+// Sends the email and password to POST /auth/login.
+// On success the returned JWT is written to token.txt so every other
+// window can read it via envCreator::getToken().
+// On failure a warning dialog is shown and the window stays open.
 void AdminLogin::login(){
     QUrl url(URL + "auth/login");
 
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    // Creating Database post objects body
     QJsonObject body;
-    body["email"] = ui->emailEdit->text();
+    body["email"]    = ui->emailEdit->text();
     body["password"] = ui->passwordEdit->text();
 
-    QNetworkReply *reply = manager->post(request,QJsonDocument(body).toJson());
+    QNetworkReply *reply = manager->post(request, QJsonDocument(body).toJson());
 
-    // Connecting to the database and getting result if the user can continue with the current user
     connect(reply, &QNetworkReply::finished, this, [=](){
         auto response = QJsonDocument::fromJson(reply->readAll()).object();
         QString token = response["accessToken"].toString();
 
         if(!token.isEmpty()){
+            // Persist the JWT to disk so all subsequent requests can attach it
             QFile file("token.txt");
             if(file.open(QIODevice::WriteOnly | QIODevice::Truncate)){
                 file.write(token.toUtf8());
                 file.close();
             }
-            // Getting positive result
+
             AdminDashboardview *dashboard = new AdminDashboardview();
             dashboard->show();
-
-            //Closing the login window
-            this->close();
-        }else{
-            // Getting negative result
+            this->close(); // Close login window after successful authentication
+        } else {
             QMessageBox::warning(this, "Login Failed", "Wrong Email or password");
         }
 

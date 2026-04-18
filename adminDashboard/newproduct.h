@@ -6,12 +6,13 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QComboBox>
 #include <QString>
+#include <QStringList>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class NewProduct;
 }
-QT_END_MOC_NAMESPACE
+QT_END_NAMESPACE
 
 class NewProduct : public QMainWindow
 {
@@ -26,6 +27,8 @@ private:
     QNetworkAccessManager *manager;
     QComboBox *catBox;
     QComboBox *subCatBox;
+    QStringList selectedMediaFiles;
+    QString currentProductId;
 
 private slots:
     void returnBackToAdminView();
@@ -33,7 +36,11 @@ private slots:
     void createProduct();
     void updateProduct();
     void showBoxes();
+    void selectMediaFiles();
+    void uploadMedia(const QString &productId);
+    void deleteSelectedMedia();
 
+    bool validateForm();
     QString categorySelection();
     QString subcategorySelection();
     QString brandSelection();

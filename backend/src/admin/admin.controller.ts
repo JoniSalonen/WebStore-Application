@@ -12,6 +12,9 @@ import { RolesGuard } from "../auth/roles.guard";
 import { Roles } from "../auth/roles.decorator";
 import { AdminService } from "./admin.service";
 import { UpdateOrderStatusDto } from "./dto/update-order-status.dto";
+import { SalesRangeDto } from "./dto/sales-range.dto";
+import { TopProductsQueryDto } from "./dto/top-products-query.dto";
+import { LowStockQueryDto } from "./dto/low-stock-query.dto";
 
 @Controller("admin")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -33,25 +36,24 @@ export class AdminController {
   }
 
   @Get("sales")
-  getSalesData(@Query("range") range: "today" | "week" | "month" | "year") {
-    return this.adminService.getSalesData(range);
+  getSalesData(@Query() dto: SalesRangeDto) {
+    return this.adminService.getSalesData(
+      dto.range as "today" | "week" | "month" | "year",
+    );
   }
 
   @Get("sales/chart")
-  getSalesChartData(@Query("range") range: string) {
-    return this.adminService.getSalesChartData(range);
+  getSalesChartData(@Query() dto: SalesRangeDto) {
+    return this.adminService.getSalesChartData(dto.range);
   }
 
   @Get("sales/top-products")
-  getTopSellingProducts(
-    @Query("range") range: string,
-    @Query("limit") limit: string,
-  ) {
-    return this.adminService.getTopSellingProducts(range, Number(limit || 5));
+  getTopSellingProducts(@Query() dto: TopProductsQueryDto) {
+    return this.adminService.getTopSellingProducts(dto.range, dto.limit ?? 5);
   }
 
   @Get("products/low-stock")
-  getLowStockProducts(@Query("threshold") threshold: string) {
-    return this.adminService.getLowStockProducts(Number(threshold || 10));
+  getLowStockProducts(@Query() dto: LowStockQueryDto) {
+    return this.adminService.getLowStockProducts(dto.threshold ?? 10);
   }
 }
